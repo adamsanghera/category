@@ -2,7 +2,9 @@ package category
 
 import (
 	"errors"
+	"time"
 
+	"github.com/adamsanghera/badge"
 	bus "github.com/adamsanghera/redisBus"
 )
 
@@ -13,8 +15,13 @@ type Category interface {
 	// Commands
 	AddUser(uid interface{}) error
 	RemoveUser(uid interface{}) error
+	IssueBadge(uid interface{}) error
+	RenewBadge(uid interface{}, badge badge.Badge) error
+	RevokeBadge(uid interface{}) error
 
-	Contains(uid interface{}) (bool, error)
+	// Queries
+	IsGroupOf(uid interface{}) (bool, error)
+	GetBadge(uid interface{}) (badge.Badge, time.Duration, error)
 }
 
 // UserGroup is an implementation of Category
@@ -42,8 +49,8 @@ func (g UserGroup) RemoveUser(uid interface{}) error {
 	return err
 }
 
-// Contains checks whether a user record exists in Redis
-func (g UserGroup) Contains(uid interface{}) (bool, error) {
+// IsGroupOf checks whether a user record exists in Redis
+func (g UserGroup) IsGroupOf(uid interface{}) (bool, error) {
 	s, ok := uid.(string)
 	if !ok {
 		return false, errors.New("UserID provided was not a string")
